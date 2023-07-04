@@ -12,15 +12,13 @@ datasource db {
 
 model Booking {
   id     Int      @id @default(autoincrement())
-  room   Room     @relation(fields: [roomId], references: [id])
+  room_id Int
   from   DateTime
   to     DateTime
   is_vip Boolean
-  roomId Int
 }
 
 model Room {
   id      Int       @id @default(autoincrement())
   number  Int
-  Booking Booking[]
 }
