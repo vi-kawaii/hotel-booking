@@ -1,25 +1,26 @@
 import prisma from "../../lib/prisma";
-import areIntervalsOverlapping from "date-fns/areIntervalsOverlapping";
 
 export default async function handler(req, res) {
   const { room_id, from, to, is_vip } = JSON.parse(req.body);
 
-  const bookings = await prisma.booking.findMany();
-
-  let isNumberBusy = false;
-
-  bookings.some((b) => {
-    if (
-      areIntervalsOverlapping(
-        { start: from, end: to },
-        { start: b.from, end: b.from }
-      )
-    ) {
-      isNumberBusy = true;
+  const bookings = await prisma.booking.findMany({
+    where: {
+      AND: [
+        {
+          from: {
+            gte: new Date(to)
+          }
+        },
+        {
+          to: {
+            lte: new Date(from)
+          }
+        }
+      ]
     }
   });
 
-  if (isNumberBusy) {
+  if (bookings.length === 0) {
     res.end();
     return;
   }

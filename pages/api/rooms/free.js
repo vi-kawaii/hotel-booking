@@ -1,12 +1,35 @@
 import prisma from "../../../lib/prisma";
 
 export default async function handler(req, res) {
-  const bookings = await prisma.booking.findMany();
-  const rooms = await prisma.room.findMany();
+  const { from, to } = JSON.parse(req.body);
 
-  const bookingsRooms = bookings.map((b) => b.room_id);
+  const bookings = await prisma.booking.findMany({
+    where: {
+      AND: [
+        {
+          from: {
+            gte: new Date(to)
+          }
+        },
+        {
+          to: {
+            lte: new Date(from)
+          }
+        }
+      ]
+    },
+    select: {
+      id: true
+    }
+  });
 
-  const result = rooms.filter((r) => !bookingsRooms.includes(r.id));
+  const rooms = await prisma.room.findMany({
+    where: {
+      id: {
+        in: bookings.map(b => b.id)
+      }
+    }
+  });
 
-  res.json(result);
+  res.json(rooms);
 }
